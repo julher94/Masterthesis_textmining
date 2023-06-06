@@ -104,18 +104,7 @@ def sort_by_person(person_a, person_b):
             current_line += 1
 
         return questions_and_answers
-        # print("All questions:")
-        # counter = 0
-        # for question in questions_and_answers[person_a]:
-        #     counter += 1
-        #     print(str(counter) + ": " + question)
-        #
-        # print("\n\n\nAll Answers:")
-        # counter = 0
-        # for answer in questions_and_answers[person_b]:
-        #     counter += 1
-        #     print(str(counter) + ": " + answer)
-
+    
     else:
         print("No textfile found")
 
@@ -131,6 +120,7 @@ def get_sentences(paragraph):
 
 # utility function using bert to find the keywords from a provided paragraph
 def keyword_by_bert(paragraph, numKeywords, n_gram_min, n_gram_max):
+    # Based on https://towardsdatascience.com/keyword-extraction-with-bert-724efca412ea
     # import ntlk.corpus.stopwords to have access to german stopwords
     from nltk.corpus import stopwords
     # mport sklearn for the feature extraction
@@ -177,7 +167,7 @@ def keyword_by_bert(paragraph, numKeywords, n_gram_min, n_gram_max):
     
 # utility function for the extraction of keyphrases with at least one noun
 def extract_keyphrases(paragraph):
-    
+    # Based on https://towardsdatascience.com/enhancing-keybert-keyword-extraction-results-with-keyphrasevectorizers-3796fa93f4db
     from keyphrase_vectorizers import KeyphraseCountVectorizer
     # import keybert
     from keybert import KeyBERT
@@ -186,27 +176,25 @@ def extract_keyphrases(paragraph):
     # Small pythonScripts that prints the text between two lines
     # Init German KeyBERT model
     kw_model = KeyBERT(model=TransformerDocumentEmbeddings('dbmdz/bert-base-german-uncased'))
-    # Init vectorizer for the German language using a position pattern including an adjective and a noun and using german stopwords
-    vectorizer = KeyphraseCountVectorizer(spacy_pipeline='de_core_news_sm', pos_pattern='<ADJ.*>*<N.*>+', stop_words='german')
+    # Init vectorizer for the German language using a position pattern including an adjective and a noun 
+    # or an adverb and a verb and using german stopwords
+    vectorizer = KeyphraseCountVectorizer(spacy_pipeline='de_core_news_sm', pos_pattern='<ADJ.*>*<N.*>+|<ADV.*>*<VERB.*>+', stop_words='german')
     # extracted keyphrases and return them
     keywords = kw_model.extract_keywords(docs=paragraph, vectorizer=vectorizer)
     return keywords;
 
 # utilityfuncton for primitive extractive textsummarization
 def summarize(paragraph):
-    # Use keyphrase vectorizers extracts keyphrases with part-of-speech patterns 
-    # from a collection of text documents and converts them into a document-keyphrase matrix
-    from keyphrase_vectorizers import KeyphraseCountVectorizer
-    # import keybert
-    from keybert import KeyBERT
+    # Based on https://medium.com/analytics-vidhya/text-summarization-using-bert-gpt2-xlnet-5ee80608e961s
     # Import summarizer and TransformerSummarizer
-    from summarizer import Summarizer,TransformerSummarizer
+    from summarizer import Summarizer
     # import every transformer to have access to all pre-trained models
-    from transformers import DistilBertTokenizer, DistilBertModel
-   # from transformers import *
+    from transformers import DistilBertTokenizer, DistilBertModel, logging
+    # Command that prevents any error or warning logs from being displayed, if they are to distracting
+    logging.set_verbosity_error()
     # define a tokenizer
-    d_tokenizer = DistilBertTokenizer.from_pretrained('bert-base-german-cased') #'distilbert-base-multilingual-cased')
-    d_model = DistilBertModel.from_pretrained('bert-base-german-cased', output_hidden_states=True)
+    d_tokenizer = DistilBertTokenizer.from_pretrained('dbmdz/distilbert-base-german-europeana-cased') # 'distilbert-base-multilingual-cased')
+    d_model = DistilBertModel.from_pretrained('dbmdz/distilbert-base-german-europeana-cased', output_hidden_states=True)
     # create a summarizer-model that uses multi-language model and tokenizer
     bert_model = Summarizer(custom_model=d_model, custom_tokenizer=d_tokenizer)
     

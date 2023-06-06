@@ -7,7 +7,7 @@ import util
 numOfFiles = len(sys.argv) - 1
 
 if numOfFiles < 1:
-    print("Usage: python readFileFromLine.py <file>")
+    print("Usage: python keywordExtraction.py <file> <Person_A> <Person_B>")
 
 else:
     personA = sys.argv[2]
